@@ -1,35 +1,50 @@
 use nysvpn_core::crypto;
-use nysvpn_core::tunnel;
-use rand_core::{OsRng, RngCore};
+
+use nysvpn_core::tun;
+
+use tokio::net::UdpSocket;
+
+use rand_core::{ OsRng, RngCore };
+
+use std::io::Read;
 
 #[tokio::main]
 async fn main() {
+    println!("NySVPN daemon started");
 
-    println!("NysVPN daemon started");
+    // TUN device
+    let mut dev = tun::create_tun().expect("failed to create tun");
 
-    let sock = tunnel::connect("127.0.0.1:51820").await.unwrap();
+    // UDP socket with explicit type
+    let sock: UdpSocket = UdpSocket::bind("127.0.0.1:0").await.expect("failed to bind");
 
-    let mut nonce = [0u8; 12];
+    sock.connect("127.0.0.1:51820").await.expect("failed to connect");
+
+    // explicit nonce type
+    let mut nonce: [u8; 12] = [0u8; 12];
 
     loop {
+        // explicit buffer type
+        let mut buf: [u8; 1500] = [0u8; 1500];
 
+        // explicit len type
+        let len: usize = dev.read(&mut buf).expect("tun read failed");
+
+        // fill nonce
         OsRng.fill_bytes(&mut nonce);
 
-        let data = b"vpn packet";
+        // encrypt
+        let encrypted: Vec<u8> = crypto::encrypt(&buf[..len], &nonce);
 
-        let encrypted = crypto::encrypt(data, &nonce);
-
-        let mut packet = Vec::new();
+        // explicit packet type
+        let mut packet: Vec<u8> = Vec::new();
 
         packet.extend_from_slice(&nonce);
         packet.extend_from_slice(&encrypted);
 
-        sock.send(&packet).await.unwrap();
+        // send
+        let _sent: usize = sock.send(&packet).await.expect("send failed");
 
-        println!("Packet sent");
-
-        tokio::time::sleep(std::time::Duration::from_secs(2)).await;
-
+        println!("sent packet");
     }
-
 }

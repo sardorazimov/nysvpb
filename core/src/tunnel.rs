@@ -1,12 +1,23 @@
-use tokio::net::UdpSocket;
 use anyhow::Result;
+use tun::{Configuration};
+use tun::platform::Device;
 
-pub async fn connect(addr: &str) -> Result<UdpSocket> {
+pub fn create_tun() -> Result<Device> {
 
-    let sock = UdpSocket::bind("0.0.0.0:0").await?;
+    let mut config =
+        Configuration::default();
 
-    sock.connect(addr).await?;
+    config
+        .address("10.0.0.1")
+        .netmask("255.255.255.0")
+        .mtu(1500)
+        .up();
 
-    Ok(sock)
+    let dev =
+        Device::new(&config)?;
+
+    println!("TUN device created");
+
+    Ok(dev)
 
 }

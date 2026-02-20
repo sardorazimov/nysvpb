@@ -7,24 +7,24 @@ use chacha20poly1305::{
 
 const KEY_BYTES: [u8; 32] = [1; 32];
 
-pub fn encrypt(data: &[u8], nonce: &[u8;12]) -> Vec<u8> {
+pub fn encrypt(data: &[u8], nonce_bytes: &[u8; 12]) -> Vec<u8> {
 
-    let cipher = ChaCha20Poly1305::new(Key::from_slice(&KEY_BYTES));
+    let key = Key::from_slice(&KEY_BYTES);
 
-    cipher.encrypt(
-        Nonce::from_slice(nonce),
-        data
-    ).unwrap()
+    let cipher = ChaCha20Poly1305::new(key);
 
+    let nonce = Nonce::from_slice(nonce_bytes);
+
+    cipher.encrypt(nonce, data).unwrap()
 }
 
-pub fn decrypt(data: &[u8], nonce: &[u8;12]) -> Vec<u8> {
+pub fn decrypt(data: &[u8], nonce_bytes: &[u8; 12]) -> Vec<u8> {
 
-    let cipher = ChaCha20Poly1305::new(Key::from_slice(&KEY_BYTES));
+    let key = Key::from_slice(&KEY_BYTES);
 
-    cipher.decrypt(
-        Nonce::from_slice(nonce),
-        data
-    ).unwrap()
+    let cipher = ChaCha20Poly1305::new(key);
 
+    let nonce = Nonce::from_slice(nonce_bytes);
+
+    cipher.decrypt(nonce, data).unwrap()
 }
