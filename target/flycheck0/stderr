@@ -1,4 +1,0 @@
-    Updating crates.io index
-error: no matching package named `nysvpn-core` found
-location searched: /Users/sardorazimov/Desktop/nysvpn/core
-required by package `daemon v0.1.0 (/Users/sardorazimov/Desktop/nysvpn/daemon)`
