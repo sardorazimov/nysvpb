@@ -8,3 +8,13 @@
 # IDE ve OS özel dosyaları
 .DS_Store
 .vscode/
+
+# macOS System Files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Xcode / Swift Specific (Arayüz tarafı için)
+build/
+*.xcodeproj/
+*.xcworkspace/
