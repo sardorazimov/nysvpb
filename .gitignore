@@ -1,0 +1,10 @@
+# Rust derleme dosyaları
+/target/
+**/target/
+
+# Cargo kilit dosyası (Kütüphane geliştiriyorsan ekleme, uygulama ise ekle)
+# Cargo.lock
+
+# IDE ve OS özel dosyaları
+.DS_Store
+.vscode/
