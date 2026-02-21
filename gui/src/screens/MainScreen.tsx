@@ -13,6 +13,7 @@ import {
   isConnected,
 } from "../types";
 import { vpnConnect, vpnDisconnect, vpnStatus, vpnStats } from "../tauri-commands";
+import StatusBadge from "../components/StatusBadge";
 
 interface Props {
   selectedServer: ServerInfo | null;
@@ -170,8 +171,21 @@ export default function MainScreen({ selectedServer, settings: _settings }: Prop
           </>
         )}
 
+        {/* Status badges */}
         {error && (
-          <div className="text-xs text-vpn-red text-center px-4">{error}</div>
+          <StatusBadge variant="bug" message={error} />
+        )}
+        {!error && connected && (
+          <StatusBadge
+            variant="success"
+            message={`Connected to ${server.city}, ${server.country}`}
+          />
+        )}
+        {!error && !connected && !connecting && (
+          <StatusBadge
+            variant="readplay"
+            message={`Ready to connect — ${server.city}, ${server.country}`}
+          />
         )}
       </div>
 
