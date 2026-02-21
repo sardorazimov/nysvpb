@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Required for network extension / VPN functionality -->
+    <key>com.apple.developer.networking.networkextension</key>
+    <array>
+        <string>packet-tunnel-provider</string>
+        <string>app-proxy-provider</string>
+        <string>content-filter-provider</string>
+        <string>dns-proxy</string>
+    </array>
+    <!-- Allow outgoing network connections -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+    <!-- Allow incoming network connections -->
+    <key>com.apple.security.network.server</key>
+    <true/>
+    <!-- App Sandbox (required for Mac App Store; remove for direct distribution) -->
+    <key>com.apple.security.app-sandbox</key>
+    <false/>
+</dict>
+</plist>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Info.plist for the NySVPN main application bundle.
+  The GUI is built by Tauri, which generates its own Info.plist.
+  This file documents additional keys required for Network Extensions.
+-->
+<plist version="1.0">
+<dict>
+    <key>CFBundleIdentifier</key>
+    <string>com.nysvpb.app</string>
+
+    <key>CFBundleDisplayName</key>
+    <string>NySVPN</string>
+
+    <key>CFBundleVersion</key>
+    <string>1</string>
+
+    <key>CFBundleShortVersionString</key>
+    <string>0.1.0</string>
+
+    <!-- Minimum macOS version -->
+    <key>LSMinimumSystemVersion</key>
+    <string>13.0</string>
+
+    <!-- Entitlements for network extensions -->
+    <key>com.apple.developer.networking.networkextension</key>
+    <array>
+        <string>packet-tunnel-provider</string>
+    </array>
+</dict>
+</plist>

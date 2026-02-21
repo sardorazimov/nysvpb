@@ -1,6 +1,17 @@
 [package]
 name = "cli"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+
+[[bin]]
+name = "nysvpb"
+path = "src/main.rs"
 
 [dependencies]
+client = { path = "../client" }
+shared = { path = "../shared" }
+tokio = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+clap = { workspace = true }
+
