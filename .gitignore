@@ -18,3 +18,9 @@
 build/
 *.xcodeproj/
 *.xcworkspace/
+# Node / npm
+gui/node_modules/
+gui/dist/
+
+# Tauri build output
+gui/src-tauri/target/

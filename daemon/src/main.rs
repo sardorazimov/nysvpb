@@ -1,50 +1,76 @@
-use nysvpn_core::crypto;
+//! NySVPN privileged background daemon.
+//!
+//! Listens on a Unix domain socket at [`shared::SOCKET_PATH`] and handles
+//! [`VpnCommand`] messages from the client (CLI / GUI Tauri backend).
+//!
+//! On macOS this process is installed as a LaunchDaemon so it runs as root,
+//! which is required to create TUN network interfaces.
 
-use nysvpn_core::tun;
-
-use tokio::net::UdpSocket;
-
-use rand_core::{ OsRng, RngCore };
-
-use std::io::Read;
+use anyhow::Result;
+use shared::{VpnCommand, VpnResponse, SOCKET_PATH};
+use std::path::Path;
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+use tokio::net::UnixListener;
 
 #[tokio::main]
-async fn main() {
-    println!("NySVPN daemon started");
+async fn main() -> Result<()> {
+    println!("NySVPN daemon starting – socket: {SOCKET_PATH}");
 
-    // TUN device
-    let mut dev = tun::create_tun().expect("failed to create tun");
+    // Remove stale socket file if present.
+    if Path::new(SOCKET_PATH).exists() {
+        std::fs::remove_file(SOCKET_PATH)?;
+    }
 
-    // UDP socket with explicit type
-    let sock: UdpSocket = UdpSocket::bind("127.0.0.1:0").await.expect("failed to bind");
-
-    sock.connect("127.0.0.1:51820").await.expect("failed to connect");
-
-    // explicit nonce type
-    let mut nonce: [u8; 12] = [0u8; 12];
+    let listener = UnixListener::bind(SOCKET_PATH)?;
+    println!("NySVPN daemon ready");
 
     loop {
-        // explicit buffer type
-        let mut buf: [u8; 1500] = [0u8; 1500];
-
-        // explicit len type
-        let len: usize = dev.read(&mut buf).expect("tun read failed");
-
-        // fill nonce
-        OsRng.fill_bytes(&mut nonce);
-
-        // encrypt
-        let encrypted: Vec<u8> = crypto::encrypt(&buf[..len], &nonce);
-
-        // explicit packet type
-        let mut packet: Vec<u8> = Vec::new();
-
-        packet.extend_from_slice(&nonce);
-        packet.extend_from_slice(&encrypted);
-
-        // send
-        let _sent: usize = sock.send(&packet).await.expect("send failed");
-
-        println!("sent packet");
+        let (stream, _addr) = listener.accept().await?;
+        tokio::spawn(async move {
+            if let Err(e) = handle_client(stream).await {
+                eprintln!("client handler error: {e}");
+            }
+        });
     }
 }
+
+/// Handle a single client connection: read newline-delimited JSON commands,
+/// dispatch them, and write back a JSON response.
+async fn handle_client(stream: tokio::net::UnixStream) -> Result<()> {
+    let (read_half, mut write_half) = stream.into_split();
+    let mut lines = BufReader::new(read_half).lines();
+
+    while let Some(line) = lines.next_line().await? {
+        if line.trim().is_empty() {
+            continue;
+        }
+
+        let response = match serde_json::from_str::<VpnCommand>(&line) {
+            Ok(cmd) => dispatch(cmd),
+            Err(e) => VpnResponse::Error(format!("parse error: {e}")),
+        };
+
+        let mut json = serde_json::to_string(&response)?;
+        json.push('\n');
+        write_half.write_all(json.as_bytes()).await?;
+    }
+
+    Ok(())
+}
+
+/// Execute a [`VpnCommand`] and return the appropriate [`VpnResponse`].
+fn dispatch(cmd: VpnCommand) -> VpnResponse {
+    match cmd {
+        VpnCommand::Connect(config) => match nysvpn_core::vpn::connect(config) {
+            Ok(()) => VpnResponse::Ok,
+            Err(e) => VpnResponse::Error(e.to_string()),
+        },
+        VpnCommand::Disconnect => match nysvpn_core::vpn::disconnect() {
+            Ok(()) => VpnResponse::Ok,
+            Err(e) => VpnResponse::Error(e.to_string()),
+        },
+        VpnCommand::GetStatus => VpnResponse::Status(nysvpn_core::vpn::get_status()),
+        VpnCommand::GetStats => VpnResponse::Stats(nysvpn_core::vpn::get_stats()),
+    }
+}
+

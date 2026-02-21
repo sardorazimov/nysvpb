@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.nysvpb.daemon</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/nysvpb-daemon</string>
+    </array>
+
+    <!-- Run as root so the daemon can create TUN interfaces -->
+    <key>UserName</key>
+    <string>root</string>
+
+    <key>GroupName</key>
+    <string>wheel</string>
+
+    <!-- Start automatically when loaded -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- Restart if the daemon crashes -->
+    <key>KeepAlive</key>
+    <true/>
+
+    <!-- Log output -->
+    <key>StandardOutPath</key>
+    <string>/var/log/nysvpb-daemon.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/var/log/nysvpb-daemon-error.log</string>
+
+    <!-- Require network to be available -->
+    <key>NetworkState</key>
+    <true/>
+</dict>
+</plist>

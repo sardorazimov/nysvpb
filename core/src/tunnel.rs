@@ -1,23 +1,13 @@
+//! WireGuard-style packet tunnel: reads from the TUN interface, encrypts,
+//! and forwards over UDP to the VPN server, and vice-versa.
+
 use anyhow::Result;
-use tun::{Configuration};
-use tun::platform::Device;
+use std::net::SocketAddr;
+use tokio::net::UdpSocket;
 
-pub fn create_tun() -> Result<Device> {
-
-    let mut config =
-        Configuration::default();
-
-    config
-        .address("10.0.0.1")
-        .netmask("255.255.255.0")
-        .mtu(1500)
-        .up();
-
-    let dev =
-        Device::new(&config)?;
-
-    println!("TUN device created");
-
-    Ok(dev)
-
+/// Open a UDP socket bound to an ephemeral local port and connected to `addr`.
+pub async fn connect_udp(addr: SocketAddr) -> Result<UdpSocket> {
+    let sock = UdpSocket::bind("0.0.0.0:0").await?;
+    sock.connect(addr).await?;
+    Ok(sock)
 }
