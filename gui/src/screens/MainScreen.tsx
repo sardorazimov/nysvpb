@@ -94,6 +94,8 @@ export default function MainScreen({ selectedServer, settings: _settings }: Prop
         await vpnConnect({
           server_addr: server.address,
           server_public_key: server.public_key,
+          // TODO: Load client private key from secure storage (Keychain on macOS).
+          //       The placeholder below must be replaced before connecting to a real server.
           client_private_key: "YOUR_PRIVATE_KEY=",
           client_ip: "10.0.0.2",
           dns_servers: ["1.1.1.1", "1.0.0.1"],

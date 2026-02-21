@@ -85,6 +85,10 @@ impl Default for AppSettings {
 }
 
 /// Return the bundled list of VPN servers.
+///
+/// **Deployment note:** Replace each `public_key` field with the actual
+/// WireGuard public key for your server. These placeholder values are used
+/// during development only and will cause connections to fail in production.
 fn builtin_servers() -> Vec<ServerInfo> {
     vec![
         ServerInfo {

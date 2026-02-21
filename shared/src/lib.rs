@@ -73,5 +73,10 @@ pub struct ServerInfo {
 }
 
 /// Path to the Unix domain socket used for daemon IPC.
+///
+/// **Security note:** `/var/run/nysvpb/` is preferred in production (requires
+/// the directory to be created with restricted permissions by the installer).
+/// The `/tmp` path is used here as a cross-platform development default.
+/// In the installed LaunchDaemon the socket is created under `/var/run/`.
 pub const SOCKET_PATH: &str = "/tmp/nysvpb-daemon.sock";
 

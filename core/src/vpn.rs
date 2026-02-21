@@ -20,13 +20,18 @@ pub struct TunnelHandle {
 /// Global tunnel state shared across the process.
 static TUNNEL: Mutex<Option<TunnelHandle>> = Mutex::new(None);
 
+/// Acquire the global tunnel lock, recovering from a poisoned mutex.
+fn lock_tunnel() -> std::sync::MutexGuard<'static, Option<TunnelHandle>> {
+    TUNNEL.lock().unwrap_or_else(|p| p.into_inner())
+}
+
 /// Establish a VPN tunnel with the given configuration.
 ///
 /// On macOS this creates a TUN interface and performs the WireGuard handshake.
 /// On other platforms (e.g. during CI) the connection is simulated so that the
 /// build succeeds and unit tests can exercise the state machine.
 pub fn connect(config: VpnConfig) -> Result<()> {
-    let mut guard = TUNNEL.lock().unwrap();
+    let mut guard = lock_tunnel();
 
     if guard.is_some() {
         return Err(anyhow::anyhow!("already connected – disconnect first"));
@@ -55,7 +60,7 @@ pub fn connect(config: VpnConfig) -> Result<()> {
 
 /// Tear down the active VPN tunnel.
 pub fn disconnect() -> Result<()> {
-    let mut guard = TUNNEL.lock().unwrap();
+    let mut guard = lock_tunnel();
 
     if guard.is_none() {
         return Err(anyhow::anyhow!("not connected"));
@@ -67,7 +72,7 @@ pub fn disconnect() -> Result<()> {
 
 /// Return the current tunnel status without blocking.
 pub fn get_status() -> TunnelStatus {
-    let guard = TUNNEL.lock().unwrap();
+    let guard = lock_tunnel();
 
     match &*guard {
         None => TunnelStatus::Disconnected,
@@ -82,7 +87,7 @@ pub fn get_status() -> TunnelStatus {
 ///
 /// Returns zeroed stats when not connected.
 pub fn get_stats() -> TunnelStats {
-    let guard = TUNNEL.lock().unwrap();
+    let guard = lock_tunnel();
 
     match &*guard {
         None => TunnelStats {
@@ -90,16 +95,16 @@ pub fn get_stats() -> TunnelStats {
             bytes_received: 0,
             last_handshake: None,
         },
-        Some(h) => h.stats.lock().unwrap().clone(),
+        Some(h) => h.stats.lock().unwrap_or_else(|p| p.into_inner()).clone(),
     }
 }
 
 /// Update the byte counters for the active tunnel (called by the packet loop).
 pub fn update_stats(bytes_sent: u64, bytes_received: u64) {
-    let guard = TUNNEL.lock().unwrap();
+    let guard = lock_tunnel();
 
     if let Some(h) = &*guard {
-        let mut stats = h.stats.lock().unwrap();
+        let mut stats = h.stats.lock().unwrap_or_else(|p| p.into_inner());
         stats.bytes_sent += bytes_sent;
         stats.bytes_received += bytes_received;
         stats.last_handshake = Some(SystemTime::now());
