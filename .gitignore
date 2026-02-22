@@ -1,6 +1,10 @@
 # Rust derleme dosyaları
 /target/
-**/target/
+target/
+node_modules/
+dist/
+gui/dist/
+gui/src-tauri/target/
 
 # Cargo kilit dosyası (Kütüphane geliştiriyorsan ekleme, uygulama ise ekle)
 # Cargo.lock
@@ -24,3 +28,6 @@ gui/dist/
 
 # Tauri build output
 gui/src-tauri/target/
+
+# Diğer geçici dosyalar
+*.dmg
