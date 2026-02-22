@@ -3,30 +3,26 @@
 //! Exposes Tauri commands that the React frontend calls to manage the VPN tunnel.
 //! Commands communicate with the privileged daemon over the Unix socket IPC.
 
-use serde::{Deserialize, Serialize};
-use shared::{ServerInfo, TunnelStats, TunnelStatus, VpnConfig};
-use tauri::Manager;
+use serde::{ Deserialize, Serialize };
+use shared::{ ServerInfo, TunnelStats, TunnelStatus, VpnConfig };
 
 // ── Tauri commands ────────────────────────────────────────────────────────────
 
 /// Connect to a VPN server.
 #[tauri::command]
 async fn vpn_connect(config: VpnConfig) -> Result<(), String> {
-    let mut client = client::DaemonClient::connect()
-        .await
+    let mut client = client::DaemonClient
+        ::connect().await
         .map_err(|e| format!("cannot connect to daemon: {e}"))?;
 
-    client
-        .vpn_connect(config)
-        .await
-        .map_err(|e| e.to_string())
+    client.vpn_connect(config).await.map_err(|e| e.to_string())
 }
 
 /// Disconnect from the active VPN tunnel.
 #[tauri::command]
 async fn vpn_disconnect() -> Result<(), String> {
-    let mut client = client::DaemonClient::connect()
-        .await
+    let mut client = client::DaemonClient
+        ::connect().await
         .map_err(|e| format!("cannot connect to daemon: {e}"))?;
 
     client.vpn_disconnect().await.map_err(|e| e.to_string())
@@ -35,8 +31,8 @@ async fn vpn_disconnect() -> Result<(), String> {
 /// Query the current tunnel status.
 #[tauri::command]
 async fn vpn_status() -> Result<TunnelStatus, String> {
-    let mut client = client::DaemonClient::connect()
-        .await
+    let mut client = client::DaemonClient
+        ::connect().await
         .map_err(|e| format!("cannot connect to daemon: {e}"))?;
 
     client.vpn_status().await.map_err(|e| e.to_string())
@@ -45,8 +41,8 @@ async fn vpn_status() -> Result<TunnelStatus, String> {
 /// Query transfer statistics for the active tunnel.
 #[tauri::command]
 async fn vpn_stats() -> Result<TunnelStats, String> {
-    let mut client = client::DaemonClient::connect()
-        .await
+    let mut client = client::DaemonClient
+        ::connect().await
         .map_err(|e| format!("cannot connect to daemon: {e}"))?;
 
     client.vpn_stats().await.map_err(|e| e.to_string())
@@ -135,22 +131,28 @@ fn builtin_servers() -> Vec<ServerInfo> {
             address: "sg-sin-1.nysvpb.example:51820".to_string(),
             public_key: "REPLACE_WITH_REAL_PUBLIC_KEY=".to_string(),
             ping_ms: None,
-        },
+        }
     ]
 }
 
 /// Application entry point – called from `main.rs`.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    tauri::Builder
+        ::default()
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![
-            vpn_connect,
-            vpn_disconnect,
-            vpn_status,
-            vpn_stats,
-            list_servers,
-        ])
+        .invoke_handler(
+            tauri::generate_handler![
+               
+                vpn_connect,
+                vpn_disconnect,
+                vpn_status,
+                vpn_stats,
+                list_servers
+            ]
+  
+        )
         .run(tauri::generate_context!())
         .expect("error while running NySVPN application");
 }
+    

@@ -44,17 +44,17 @@ export default function App() {
   );
 
   return (
-    <div className="flex flex-col h-screen w-full bg-[#1a1a2e] text-white overflow-hidden">
-      {/* Header navigation */}
-      <nav className="flex items-center justify-between px-4 py-3 bg-[#16213e] border-b border-white/10">
+    <div className="flex flex-col h-screen w-full bg-[#0f172a] text-white overflow-hidden">
+
+      {/* Header */}
+      <nav className="flex items-center justify-between px-5 py-4 bg-[#0b1220] border-b border-white/10">
         <button
           onClick={() => setScreen("main")}
-          className={`text-sm font-semibold transition-colors ${
-            screen === "main" ? "text-white" : "text-white/40 hover:text-white/70"
-          }`}
+          className="text-lg font-semibold tracking-wide"
         >
           NySVPN
         </button>
+
         <div className="flex gap-3">
           <NavButton
             label="Servers"
@@ -69,16 +69,21 @@ export default function App() {
         </div>
       </nav>
 
-      {/* Screen content */}
-      <main className="flex-1 overflow-hidden">
+      {/* Screen */}
+      <main className="flex-1 overflow-hidden relative">
         {screen === "main" && (
-          <MainScreen selectedServer={selectedServer} settings={settings} />
+          <MainScreen selectedServer={selectedServer} />
         )}
+
         {screen === "servers" && (
           <ServerListScreen onSelect={handleServerSelect} />
         )}
+
         {screen === "settings" && (
-          <SettingsScreen settings={settings} onChange={handleSettingsChange} />
+          <SettingsScreen
+            settings={settings}
+            onChange={handleSettingsChange}
+          />
         )}
       </main>
     </div>

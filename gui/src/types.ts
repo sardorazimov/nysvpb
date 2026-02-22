@@ -24,6 +24,9 @@ export interface VpnConfig {
 
 /** Mirror of shared::ServerInfo from Rust. */
 export interface ServerInfo {
+  name: any;
+  lng: any;
+  lat: any;
   id: string;
   country: string;
   country_flag: string;
