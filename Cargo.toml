@@ -5,7 +5,8 @@ members = [
     "client",
     "server",
     "shared",
-    "cli"
+    "cli",
+    "gui/src-tauri"
 ]
 resolver = "2"
 
